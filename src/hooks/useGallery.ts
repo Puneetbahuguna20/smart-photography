@@ -71,8 +71,8 @@ export function useGallery() {
             id: photo.id,
             category: photo.categoryName || 'Featured',
             categorySlug: photo.categorySlug || 'all',
-            thumbnailUrl: photo.thumbnailUrl || `${photo.url}&size=thumb`,
-            image: photo.url,
+            thumbnailUrl: photo.thumbnailUrl || `/api/image?id=${photo.id}&size=thumb`,
+            image: photo.url || `/api/image?id=${photo.id}&size=full`,
             title: cleanTitle(photo.name) || 'Featured Photo',
           })),
         };
@@ -92,8 +92,8 @@ export function useGallery() {
           id: photo.id,
           category: category.name,
           categorySlug: category.slug,
-          thumbnailUrl: photo.thumbnailUrl || `${photo.url}&size=thumb`,
-          image: photo.url,
+          thumbnailUrl: photo.thumbnailUrl || `/api/image?id=${photo.id}&size=thumb`,
+          image: photo.url || `/api/image?id=${photo.id}&size=full`,
           title: cleanTitle(photo.name) || photo.name,
         })),
       };

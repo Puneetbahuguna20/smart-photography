@@ -128,7 +128,7 @@ export default async function handler(req: VercelRequest | any, res: VercelRespo
           categoryName: folder.name || 'Untitled',
           categorySlug: slug,
           thumbnailUrl: `/api/image?id=${file.id}&size=thumb`,
-          url: `/api/image?id=${file.id}`,
+          url: `/api/image?id=${file.id}&size=full`,
         }));
 
         // Pool into allCollectedPhotos for "All"

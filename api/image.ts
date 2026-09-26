@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { google } from 'googleapis';
+import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 
@@ -69,7 +70,7 @@ export default async function handler(req: VercelRequest | any, res: VercelRespo
   }
 
   const id = getQueryParam(req, 'id');
-  const size = getQueryParam(req, 'size'); // 'thumb' for optimized ~800px grid cards, default/null for full-res lightbox
+  const size = getQueryParam(req, 'size'); // 'thumb' for optimized WebP cards, 'full' for lightbox
 
   // Strict file ID validation prevents SSRF, traversal, or arbitrary URL access
   if (!id || typeof id !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(id)) {
@@ -94,40 +95,72 @@ export default async function handler(req: VercelRequest | any, res: VercelRespo
       return sendError(res, 400, 'File is not a supported image.');
     }
 
-    // 2. High-speed thumbnail delivery for gallery grid (optimized ~800px, ~100KB instead of ~7MB)
-    if (size === 'thumb' && metaRes.data.thumbnailLink) {
-      const thumbUrl = metaRes.data.thumbnailLink.replace(/=s\d+/, '=s800');
-      const thumbRes = await fetch(thumbUrl);
+    // 2. High-speed, highly-compressed WebP thumbnail delivery for gallery grid
+    if (size === 'thumb') {
+      try {
+        let inputBuffer: Buffer | null = null;
+        let fallbackMime = 'image/jpeg';
 
-      if (thumbRes.ok && thumbRes.body) {
-        res.setHeader('Content-Type', thumbRes.headers.get('content-type') || 'image/jpeg');
-        const length = thumbRes.headers.get('content-length');
-        if (length) res.setHeader('Content-Length', length);
-
-        // Aggressive caching: 7 days browser, 30 days CDN, stale-while-revalidate 1 day
-        res.setHeader(
-          'Cache-Control',
-          'public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400'
-        );
-
-        if (req.method === 'HEAD') {
-          return res.end();
+        if (metaRes.data.thumbnailLink) {
+          const thumbUrl = metaRes.data.thumbnailLink.replace(/=s\d+/, '=s800');
+          const thumbRes = await fetch(thumbUrl);
+          if (thumbRes.ok) {
+            const arr = await thumbRes.arrayBuffer();
+            inputBuffer = Buffer.from(arr);
+            fallbackMime = thumbRes.headers.get('content-type') || fallbackMime;
+          }
         }
 
-        const buffer = await thumbRes.arrayBuffer();
-        return res.end(Buffer.from(buffer));
+        // If thumbnailLink is not available, stream media directly
+        if (!inputBuffer) {
+          const response = await drive.files.get(
+            { fileId: id, alt: 'media' },
+            { responseType: 'arraybuffer' }
+          );
+          inputBuffer = Buffer.from(response.data as ArrayBuffer);
+        }
+
+        if (inputBuffer) {
+          let outputBuffer: Buffer;
+          let outputMime = 'image/webp';
+
+          try {
+            outputBuffer = await sharp(inputBuffer)
+              .rotate() // preserve orientation from EXIF
+              .resize({ width: 800, withoutEnlargement: true, fit: 'inside' })
+              .webp({ quality: 80 })
+              .toBuffer();
+          } catch (sharpErr) {
+            console.warn('Sharp transformation fallback:', sharpErr);
+            outputBuffer = inputBuffer;
+            outputMime = fallbackMime;
+          }
+
+          res.setHeader('Content-Type', outputMime);
+          res.setHeader('Content-Length', outputBuffer.length);
+          // Long-lived immutable caching: 1 year for thumbnails
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+
+          if (req.method === 'HEAD') {
+            return res.end();
+          }
+
+          return res.end(outputBuffer);
+        }
+      } catch (thumbError) {
+        console.warn('Thumbnail generation failed, falling back to full-size stream:', thumbError);
       }
     }
 
-    // 3. Full-resolution stream for Swiper Lightbox
+    // 3. Full-resolution stream for Swiper Lightbox (size === 'full' or default)
     res.setHeader('Content-Type', mimeType);
     if (metaRes.data.size) {
       res.setHeader('Content-Length', metaRes.data.size);
     }
-    // Cache full-resolution: 7 days browser, 30 days CDN
+    // Cache full-resolution: 1 day browser, 7 days CDN, stale-while-revalidate 1 day
     res.setHeader(
       'Cache-Control',
-      'public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400'
+      'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400'
     );
 
     if (req.method === 'HEAD') {
