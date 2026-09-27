@@ -281,9 +281,9 @@ export default function Hero() {
               </div>
 
               {/* Grand Brand Heading - Fluidly sized to perfectly fit mobile screens without cutting off or breaking words */}
-              <h1 className="font-playfair text-[clamp(1.65rem,8vw,2.35rem)] sm:text-6xl md:text-7xl lg:text-[80px] xl:text-[88px] font-black leading-[0.94] tracking-tight mb-3 sm:mb-4 drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)] max-w-full">
+              <h1 className="font-playfair text-[clamp(1.45rem,7vw,2.15rem)] sm:text-6xl md:text-7xl lg:text-[80px] xl:text-[88px] font-black leading-[0.94] tracking-tight mb-3 sm:mb-4 drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)] overflow-visible">
                 <span className="text-white block whitespace-nowrap">SMART</span>
-                <span className="text-gold bg-gradient-to-r from-gold via-[#FFE29A] to-gold bg-clip-text text-transparent inline-block whitespace-nowrap pr-1 sm:pr-3 max-w-full">
+                <span className="text-gold bg-gradient-to-r from-gold via-[#FFE29A] to-gold bg-clip-text text-transparent inline-block whitespace-nowrap pr-3 sm:pr-4">
                   PHOTOGRAPHY
                 </span>
               </h1>
