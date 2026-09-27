@@ -262,7 +262,7 @@ export default function Hero() {
       {/* Center Main Content: FULL VIEWPORT WIDTH (NOT constrained in max-w-7xl) */}
       <div className="relative z-20 w-full px-4 min-[380px]:px-5 sm:px-10 md:px-12 lg:px-16 xl:px-20 my-auto py-2">
         <div className="w-full flex flex-col lg:flex-row items-center justify-between gap-8">
-          
+
           {/* Left Side: Starts significantly closer to the left edge with large editorial impact */}
           <div className="w-full lg:w-[58%] xl:w-[55%] flex flex-col items-start text-left">
             <motion.div
@@ -280,10 +280,10 @@ export default function Hero() {
                 <span className="w-6 sm:w-12 h-[1.5px] bg-gold rounded-full shrink-0" />
               </div>
 
-              {/* Grand Brand Heading - Fluidly sized to perfectly fit mobile screens without cutting off */}
-              <h1 className="font-playfair text-[1.95rem] min-[360px]:text-[2.15rem] min-[400px]:text-[2.5rem] sm:text-6xl md:text-7xl lg:text-[80px] xl:text-[88px] font-black leading-[0.94] tracking-tight mb-3 sm:mb-4 drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)] break-words max-w-full">
-                <span className="text-white block">SMART</span>
-                <span className="text-gold bg-gradient-to-r from-gold via-[#FFE29A] to-gold bg-clip-text text-transparent inline-block pr-1 sm:pr-3 max-w-full">
+              {/* Grand Brand Heading - Fluidly sized to perfectly fit mobile screens without cutting off or breaking words */}
+              <h1 className="font-playfair text-[clamp(1.65rem,8vw,2.35rem)] sm:text-6xl md:text-7xl lg:text-[80px] xl:text-[88px] font-black leading-[0.94] tracking-tight mb-3 sm:mb-4 drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)] max-w-full">
+                <span className="text-white block whitespace-nowrap">SMART</span>
+                <span className="text-gold bg-gradient-to-r from-gold via-[#FFE29A] to-gold bg-clip-text text-transparent inline-block whitespace-nowrap pr-1 sm:pr-3 max-w-full">
                   PHOTOGRAPHY
                 </span>
               </h1>
@@ -322,17 +322,17 @@ export default function Hero() {
               {/* Statistics Row: Aligned underneath CTA buttons with subtle vertical dividers */}
               <div className="flex items-center gap-3 min-[390px]:gap-5 sm:gap-8 md:gap-10 pt-1 flex-wrap sm:flex-nowrap max-w-full">
                 <div>
-                  <div className="font-playfair text-2xl min-[360px]:text-3xl sm:text-4xl font-bold text-white leading-none">500+</div>
+                  <div className="font-playfair text-2xl min-[360px]:text-3xl sm:text-4xl font-bold text-white leading-none">3500+</div>
                   <div className="text-white/60 text-[11px] sm:text-sm mt-1">Happy Clients</div>
                 </div>
                 <div className="w-[1px] h-7 sm:h-8 bg-white/20 shrink-0" />
                 <div>
-                  <div className="font-playfair text-2xl min-[360px]:text-3xl sm:text-4xl font-bold text-white leading-none">150+</div>
+                  <div className="font-playfair text-2xl min-[360px]:text-3xl sm:text-4xl font-bold text-white leading-none">500+</div>
                   <div className="text-white/60 text-[11px] sm:text-sm mt-1">Luxury Weddings</div>
                 </div>
                 <div className="w-[1px] h-7 sm:h-8 bg-white/20 shrink-0" />
                 <div>
-                  <div className="font-playfair text-2xl min-[360px]:text-3xl sm:text-4xl font-bold text-white leading-none">2018</div>
+                  <div className="font-playfair text-2xl min-[360px]:text-3xl sm:text-4xl font-bold text-white leading-none">1999</div>
                   <div className="text-white/60 text-[11px] sm:text-sm mt-1">Since</div>
                 </div>
               </div>
@@ -378,7 +378,7 @@ export default function Hero() {
       <div className="relative z-30 w-full px-4 min-[380px]:px-5 sm:px-10 md:px-12 lg:px-16 xl:px-20">
         {/* Category Navigation Bar & Indicators */}
         <div className="w-full flex items-center justify-between pb-3 mb-3 border-b border-white/10">
-          
+
           {/* Left: 01 / 04 and circular indicators (1st dot is gold when Wedding) */}
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <span className="font-mono text-white/75 text-xs sm:text-sm tracking-wider">
@@ -392,11 +392,10 @@ export default function Hero() {
                     key={dotIndex}
                     onClick={() => goToSlide(dotIndex)}
                     aria-label={`Slide ${dotIndex + 1}`}
-                    className={`rounded-full transition-all duration-300 cursor-pointer ${
-                      isDotActive
-                        ? 'w-2.5 h-2.5 bg-gold shadow-[0_0_8px_rgba(250,179,60,0.8)]'
-                        : 'w-2 h-2 border border-white/40 bg-transparent hover:border-white/80'
-                    }`}
+                    className={`rounded-full transition-all duration-300 cursor-pointer ${isDotActive
+                      ? 'w-2.5 h-2.5 bg-gold shadow-[0_0_8px_rgba(250,179,60,0.8)]'
+                      : 'w-2 h-2 border border-white/40 bg-transparent hover:border-white/80'
+                      }`}
                   />
                 );
               })}
@@ -412,11 +411,10 @@ export default function Hero() {
                 <button
                   key={cat.folder}
                   onClick={() => goToSlide(idx)}
-                  className={`font-poppins text-xs uppercase tracking-[0.15em] transition-all duration-200 whitespace-nowrap cursor-pointer pb-1 ${
-                    isActive
-                      ? 'text-gold font-bold border-b-2 border-gold'
-                      : 'text-white/60 hover:text-white font-medium'
-                  }`}
+                  className={`font-poppins text-xs uppercase tracking-[0.15em] transition-all duration-200 whitespace-nowrap cursor-pointer pb-1 ${isActive
+                    ? 'text-gold font-bold border-b-2 border-gold'
+                    : 'text-white/60 hover:text-white font-medium'
+                    }`}
                 >
                   {cat.name}
                 </button>
@@ -451,11 +449,10 @@ export default function Hero() {
                   className="flex-1 min-w-[95px] max-w-[170px] flex flex-col items-center shrink-0 group cursor-pointer"
                 >
                   <div
-                    className={`w-full h-14 sm:h-18 md:h-20 rounded-xl overflow-hidden transition-all duration-300 relative ${
-                      isActive
-                        ? 'ring-2 ring-gold border-2 border-gold shadow-[0_0_18px_rgba(250,179,60,0.6)] scale-105'
-                        : 'border border-white/20 opacity-70 hover:opacity-100 hover:border-white/50'
-                    }`}
+                    className={`w-full h-14 sm:h-18 md:h-20 rounded-xl overflow-hidden transition-all duration-300 relative ${isActive
+                      ? 'ring-2 ring-gold border-2 border-gold shadow-[0_0_18px_rgba(250,179,60,0.6)] scale-105'
+                      : 'border border-white/20 opacity-70 hover:opacity-100 hover:border-white/50'
+                      }`}
                   >
                     <img
                       src={thumbImg}
@@ -466,9 +463,8 @@ export default function Hero() {
                     />
                   </div>
                   <span
-                    className={`text-[9px] sm:text-[10px] md:text-xs font-poppins uppercase tracking-wider mt-1.5 transition-colors duration-200 ${
-                      isActive ? 'text-gold font-bold' : 'text-white/60 group-hover:text-white'
-                    }`}
+                    className={`text-[9px] sm:text-[10px] md:text-xs font-poppins uppercase tracking-wider mt-1.5 transition-colors duration-200 ${isActive ? 'text-gold font-bold' : 'text-white/60 group-hover:text-white'
+                      }`}
                   >
                     {slide.category}
                   </span>
