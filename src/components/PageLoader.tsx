@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import Camera from '../assets/images/camera.webp';
 import Lens from '../assets/images/lens.webp';
@@ -18,47 +18,65 @@ const PageLoader = ({ onComplete }: PageLoaderProps) => {
   const sparkleRef = useRef<SVGGElement>(null);
   const shutterRef = useRef<HTMLDivElement>(null);
 
-  const [assetsReady, setAssetsReady] = useState(false);
+  // Keep latest onComplete in ref to prevent stale closures or re-triggering
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
-  // Preload and verify BOTH camera body and lens images are loaded before animation starts
+  // Track if onComplete was called to prevent duplicate calls
+  const hasCompletedRef = useRef(false);
+
+  const safeComplete = () => {
+    if (!hasCompletedRef.current) {
+      hasCompletedRef.current = true;
+      onCompleteRef.current();
+    }
+  };
+
   useEffect(() => {
-    let isMounted = true;
+    let isCancelled = false;
+    let tl: gsap.core.Timeline | null = null;
 
-    const preloadImage = (src: string): Promise<void> => {
+    // Hard fallback timeout: Preloader will NEVER stay stuck longer than 4.5s
+    const fallbackTimer = setTimeout(() => {
+      safeComplete();
+    }, 4500);
+
+    // Fast image loader with 600ms per-image timeout
+    const loadAsset = (src: string): Promise<void> => {
       return new Promise((resolve) => {
         const img = new Image();
+        let done = false;
+
+        const finish = () => {
+          if (!done) {
+            done = true;
+            resolve();
+          }
+        };
+
+        // Attach listeners before src to catch cached completions
+        img.onload = finish;
+        img.onerror = finish;
         img.src = src;
-        if (img.complete && img.naturalWidth !== 0) {
-          resolve();
-        } else {
-          img.onload = () => resolve();
-          img.onerror = () => resolve(); // Safety fallback so it never hangs indefinitely
+
+        if (img.complete && img.naturalWidth > 0) {
+          finish();
         }
+
+        // Safety timeout per image
+        setTimeout(finish, 600);
       });
     };
 
-    Promise.all([
-      preloadImage(Camera),
-      preloadImage(Lens),
-    ]).then(() => {
-      if (isMounted) {
-        setAssetsReady(true);
-      }
-    });
+    const startAnimation = () => {
+      if (isCancelled) return;
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!assetsReady) return;
-
-    const tl = gsap.timeline({
-      onComplete: () => {
-        onComplete();
-      }
-    });
+      tl = gsap.timeline({
+        onComplete: () => {
+          clearTimeout(fallbackTimer);
+          safeComplete();
+        }
+      });
 
     // Initial setup - realistic camera states
     tl.set(cameraRef.current, {
@@ -221,11 +239,23 @@ const PageLoader = ({ onComplete }: PageLoaderProps) => {
       },
       3.55
     );
+  };
+
+    // Preload both camera & lens images, then start animation immediately
+    Promise.all([loadAsset(Camera), loadAsset(Lens)])
+      .catch(() => {})
+      .finally(() => {
+        startAnimation();
+      });
 
     return () => {
-      tl.kill();
+      isCancelled = true;
+      clearTimeout(fallbackTimer);
+      if (tl) {
+        tl.kill();
+      }
     };
-  }, [onComplete]);
+  }, []);
 
   return (
     <div
@@ -234,10 +264,7 @@ const PageLoader = ({ onComplete }: PageLoaderProps) => {
     >
       {/* Unified Camera & Lens Responsive Stage:
           Uses camera.webp's exact aspect ratio (1536/1024 = 1.5) so it scales perfectly on any device width */}
-      <div 
-        className="relative w-full max-w-[340px] sm:max-w-[520px] md:max-w-[640px] lg:max-w-[760px] aspect-[1536/1024] flex items-center justify-center shrink-0 transition-opacity duration-200"
-        style={{ opacity: assetsReady ? 1 : 0 }}
-      >
+      <div className="relative w-full max-w-[340px] sm:max-w-[520px] md:max-w-[640px] lg:max-w-[760px] aspect-[1536/1024] flex items-center justify-center shrink-0">
         
         {/* Photorealistic DSLR Lens - True Macro Photography Optics:
             Exact Center: X=51.76%, Y=56.64%, Diameter=30.2% */}
