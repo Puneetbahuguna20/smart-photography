@@ -77,6 +77,9 @@ export default function Testimonials() {
           modules={[Autoplay, Navigation, Pagination]}
           spaceBetween={30}
           slidesPerView={1}
+          observer={true}
+          observeParents={true}
+          resizeObserver={true}
           breakpoints={{
             640: { slidesPerView: 1 },
             1024: { slidesPerView: 2 },

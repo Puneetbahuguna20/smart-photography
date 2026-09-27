@@ -175,6 +175,9 @@ export default function Portfolio() {
             onSlideChange={(swiper) => setActiveSlideIndex(swiper.activeIndex)}
             modules={[Navigation, Pagination, EffectFade, Keyboard]}
             slidesPerView={1}
+            observer={true}
+            observeParents={true}
+            resizeObserver={true}
             effect="fade"
             fadeEffect={{ crossFade: true }}
             navigation

@@ -94,7 +94,7 @@ export default function About() {
   ];
 
   return (
-    <section id="about" ref={sectionRef} className="py-24 bg-black">
+    <section id="about" ref={sectionRef} className="py-24 bg-black overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Image */}

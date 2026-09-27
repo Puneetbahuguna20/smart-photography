@@ -151,7 +151,7 @@ export default function Hero() {
 
   // Keep active thumbnail centered within its horizontal container ONLY
   // (Using container.scrollTo instead of activeEl.scrollIntoView prevents vertical window scrolling)
-  useEffect(() => {
+  const centerActiveThumbnail = (behavior: ScrollBehavior = 'smooth') => {
     const container = thumbnailContainerRef.current;
     if (container) {
       const activeEl = container.children[activeSlide] as HTMLElement;
@@ -160,10 +160,27 @@ export default function Hero() {
           activeEl.offsetLeft - (container.clientWidth / 2) + (activeEl.clientWidth / 2);
         container.scrollTo({
           left: Math.max(0, targetScroll),
-          behavior: 'smooth',
+          behavior,
         });
       }
     }
+  };
+
+  useEffect(() => {
+    // Center thumbnail on slide change
+    centerActiveThumbnail('smooth');
+
+    // Also recenter on resize and orientationchange so layout is always exact
+    const handleResize = () => {
+      centerActiveThumbnail('auto');
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
   }, [activeSlide]);
 
   const goToSlide = (index: number) => {
@@ -264,7 +281,7 @@ export default function Hero() {
               </div>
 
               {/* Grand Brand Heading - Fluidly sized to perfectly fit mobile screens without cutting off */}
-              <h1 className="font-playfair text-[2.15rem] min-[360px]:text-[2.4rem] min-[400px]:text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[80px] xl:text-[88px] font-black leading-[0.94] tracking-tight mb-3 sm:mb-4 drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]">
+              <h1 className="font-playfair text-[1.95rem] min-[360px]:text-[2.15rem] min-[400px]:text-[2.5rem] sm:text-6xl md:text-7xl lg:text-[80px] xl:text-[88px] font-black leading-[0.94] tracking-tight mb-3 sm:mb-4 drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)] break-words max-w-full">
                 <span className="text-white block">SMART</span>
                 <span className="text-gold bg-gradient-to-r from-gold via-[#FFE29A] to-gold bg-clip-text text-transparent inline-block pr-1 sm:pr-3 max-w-full">
                   PHOTOGRAPHY
@@ -282,12 +299,12 @@ export default function Hero() {
               </p>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-4 mb-8 sm:mb-9">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-7 sm:mb-9 max-w-full">
                 <motion.a
                   href="#booking"
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.98 }}
-                  className="group inline-flex items-center gap-2 rounded-full bg-gold hover:bg-[#ffb52b] text-black font-bold px-7 sm:px-8 py-3 sm:py-3.5 text-xs sm:text-sm md:text-base shadow-[0_0_35px_rgba(250,179,60,0.45)] transition-all duration-300"
+                  className="group inline-flex items-center gap-2 rounded-full bg-gold hover:bg-[#ffb52b] text-black font-bold px-5 min-[380px]:px-7 sm:px-8 py-3 sm:py-3.5 text-xs sm:text-sm md:text-base shadow-[0_0_35px_rgba(250,179,60,0.45)] transition-all duration-300"
                 >
                   <span>Book Your Shoot</span>
                   <span className="text-base sm:text-lg transition-transform duration-300 group-hover:translate-x-1">→</span>
@@ -296,27 +313,27 @@ export default function Hero() {
                   href="#portfolio"
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.98 }}
-                  className="inline-flex items-center justify-center rounded-full border border-white/30 bg-black/40 text-white font-semibold px-7 sm:px-8 py-3 sm:py-3.5 text-xs sm:text-sm md:text-base backdrop-blur-md hover:bg-white/15 hover:border-gold/60 transition-all duration-300"
+                  className="inline-flex items-center justify-center rounded-full border border-white/30 bg-black/40 text-white font-semibold px-5 min-[380px]:px-7 sm:px-8 py-3 sm:py-3.5 text-xs sm:text-sm md:text-base backdrop-blur-md hover:bg-white/15 hover:border-gold/60 transition-all duration-300"
                 >
                   View Portfolio
                 </motion.a>
               </div>
 
               {/* Statistics Row: Aligned underneath CTA buttons with subtle vertical dividers */}
-              <div className="flex items-center gap-6 sm:gap-8 md:gap-10 pt-1">
+              <div className="flex items-center gap-3 min-[390px]:gap-5 sm:gap-8 md:gap-10 pt-1 flex-wrap sm:flex-nowrap max-w-full">
                 <div>
-                  <div className="font-playfair text-3xl sm:text-4xl font-bold text-white leading-none">500+</div>
-                  <div className="text-white/60 text-xs sm:text-sm mt-1">Happy Clients</div>
+                  <div className="font-playfair text-2xl min-[360px]:text-3xl sm:text-4xl font-bold text-white leading-none">500+</div>
+                  <div className="text-white/60 text-[11px] sm:text-sm mt-1">Happy Clients</div>
                 </div>
-                <div className="w-[1px] h-8 bg-white/20 shrink-0" />
+                <div className="w-[1px] h-7 sm:h-8 bg-white/20 shrink-0" />
                 <div>
-                  <div className="font-playfair text-3xl sm:text-4xl font-bold text-white leading-none">150+</div>
-                  <div className="text-white/60 text-xs sm:text-sm mt-1">Luxury Weddings</div>
+                  <div className="font-playfair text-2xl min-[360px]:text-3xl sm:text-4xl font-bold text-white leading-none">150+</div>
+                  <div className="text-white/60 text-[11px] sm:text-sm mt-1">Luxury Weddings</div>
                 </div>
-                <div className="w-[1px] h-8 bg-white/20 shrink-0" />
+                <div className="w-[1px] h-7 sm:h-8 bg-white/20 shrink-0" />
                 <div>
-                  <div className="font-playfair text-3xl sm:text-4xl font-bold text-white leading-none">2018</div>
-                  <div className="text-white/60 text-xs sm:text-sm mt-1">Since</div>
+                  <div className="font-playfair text-2xl min-[360px]:text-3xl sm:text-4xl font-bold text-white leading-none">2018</div>
+                  <div className="text-white/60 text-[11px] sm:text-sm mt-1">Since</div>
                 </div>
               </div>
             </motion.div>
@@ -363,7 +380,7 @@ export default function Hero() {
         <div className="w-full flex items-center justify-between pb-3 mb-3 border-b border-white/10">
           
           {/* Left: 01 / 04 and circular indicators (1st dot is gold when Wedding) */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <span className="font-mono text-white/75 text-xs sm:text-sm tracking-wider">
               {String((activeSlide % 4) + 1).padStart(2, '0')} / 04
             </span>
@@ -388,7 +405,7 @@ export default function Hero() {
 
           {/* Right: Exact categories order:
               WEDDING   PRE WEDDING   HALDI   MEHENDI   BIRTHDAY   BABY SHOOT   FASHION */}
-          <div className="flex items-center gap-4 sm:gap-6 md:gap-8 overflow-x-auto no-scrollbar py-0.5">
+          <div className="flex items-center gap-4 sm:gap-6 md:gap-8 overflow-x-auto no-scrollbar py-0.5 min-w-0 flex-1 ml-3 sm:ml-6">
             {navCategories.map((cat, idx) => {
               const isActive = currentSlide.folder === cat.folder;
               return (
@@ -422,7 +439,7 @@ export default function Hero() {
           {/* Thumbnails Container: Exact 7 thumbnails matching Target Image 2 */}
           <div
             ref={thumbnailContainerRef}
-            className="flex-1 overflow-x-auto no-scrollbar flex items-center justify-between gap-3 sm:gap-4 py-1.5"
+            className="flex-1 min-w-0 overflow-x-auto no-scrollbar flex items-center justify-between gap-3 sm:gap-4 py-1.5"
           >
             {slides.map((slide, i) => {
               const isActive = i === activeSlide;

@@ -36,12 +36,12 @@ const PageLoader = ({ onComplete }: PageLoaderProps) => {
     let isCancelled = false;
     let tl: gsap.core.Timeline | null = null;
 
-    // Hard fallback timeout: Preloader will NEVER stay stuck longer than 4.5s
+    // Hard fallback timeout: Preloader will NEVER stay stuck longer than 3.5s
     const fallbackTimer = setTimeout(() => {
       safeComplete();
-    }, 4500);
+    }, 3500);
 
-    // Fast image loader with 600ms per-image timeout
+    // Fast image loader with 400ms per-image timeout
     const loadAsset = (src: string): Promise<void> => {
       return new Promise((resolve) => {
         const img = new Image();
@@ -64,182 +64,192 @@ const PageLoader = ({ onComplete }: PageLoaderProps) => {
         }
 
         // Safety timeout per image
-        setTimeout(finish, 600);
+        setTimeout(finish, 400);
       });
     };
 
     const startAnimation = () => {
       if (isCancelled) return;
 
-      tl = gsap.timeline({
-        onComplete: () => {
-          clearTimeout(fallbackTimer);
-          safeComplete();
-        }
-      });
+      try {
+        tl = gsap.timeline({
+          onComplete: () => {
+            clearTimeout(fallbackTimer);
+            safeComplete();
+          }
+        });
 
-    // Initial setup - realistic camera states
-    tl.set(cameraRef.current, {
-      opacity: 0,
-      scale: 0.95
-    });
-    tl.set(lensContainerRef.current, {
-      opacity: 0,
-      scale: 0.92
-    });
-    tl.set(focusRingRef.current, {
-      rotate: -18
-    });
-    tl.set(glassGlintRef.current, {
-      opacity: 0.2,
-      x: -25
-    });
-    tl.set(sparkleRef.current, {
-      opacity: 0,
-      scale: 0.3,
-      transformOrigin: 'center center'
-    });
-    tl.set(shutterRef.current, {
-      opacity: 0
-    });
-    tl.set(logoRef.current, {
-      opacity: 0,
-      y: 25
-    });
-    tl.set(flashRef.current, {
-      opacity: 0
-    });
+        // Initial setup - realistic camera states
+        tl.set(cameraRef.current, {
+          opacity: 0,
+          scale: 0.95
+        });
+        tl.set(lensContainerRef.current, {
+          opacity: 0,
+          scale: 0.92
+        });
+        tl.set(focusRingRef.current, {
+          rotate: -18
+        });
+        tl.set(glassGlintRef.current, {
+          opacity: 0.2,
+          x: -25
+        });
+        tl.set(sparkleRef.current, {
+          opacity: 0,
+          scale: 0.3,
+          transformOrigin: 'center center'
+        });
+        tl.set(shutterRef.current, {
+          opacity: 0
+        });
+        tl.set(logoRef.current, {
+          opacity: 0,
+          y: 20
+        });
+        tl.set(flashRef.current, {
+          opacity: 0
+        });
 
-    // 1. Camera body & lens barrel fade in cleanly
-    tl.to(
-      [cameraRef.current, lensContainerRef.current],
-      {
-        opacity: 1,
-        scale: 1,
-        duration: 0.6,
-        ease: 'power2.out',
-        stagger: 0.05
-      },
-      0.1
-    );
+        // 1. Camera body & lens barrel fade in cleanly
+        tl.to(
+          [cameraRef.current, lensContainerRef.current],
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.45,
+            ease: 'power2.out',
+            stagger: 0.04
+          },
+          0.05
+        );
 
-    // 2. Autofocus mechanism engages: real lens rotates smoothly into sharp focus
-    tl.to(
-      focusRingRef.current,
-      {
-        rotate: 0,
-        duration: 1.1,
-        ease: 'power2.out'
-      },
-      0.3
-    );
+        // 2. Autofocus mechanism engages: real lens rotates smoothly into sharp focus
+        tl.to(
+          focusRingRef.current,
+          {
+            rotate: 0,
+            duration: 0.75,
+            ease: 'power2.out'
+          },
+          0.2
+        );
 
-    // 3. Optical glass reflection sweeps across real lens surface
-    tl.to(
-      glassGlintRef.current,
-      {
-        opacity: 0.85,
-        x: 0,
-        duration: 0.9,
-        ease: 'power2.out'
-      },
-      0.8
-    );
-    tl.to(
-      glassGlintRef.current,
-      {
-        opacity: 0.3,
-        duration: 0.6,
-        ease: 'power2.in'
-      },
-      1.7
-    );
+        // 3. Optical glass reflection sweeps across real lens surface
+        tl.to(
+          glassGlintRef.current,
+          {
+            opacity: 0.85,
+            x: 0,
+            duration: 0.6,
+            ease: 'power2.out'
+          },
+          0.5
+        );
+        tl.to(
+          glassGlintRef.current,
+          {
+            opacity: 0.3,
+            duration: 0.4,
+            ease: 'power2.in'
+          },
+          1.1
+        );
 
-    // 4. Optical focus-lock sparkle twinkles brightly when focus locks
-    tl.to(
-      sparkleRef.current,
-      {
-        opacity: 1,
-        scale: 1.35,
-        duration: 0.35,
-        ease: 'back.out(2)'
-      },
-      1.3
-    );
-    tl.to(
-      sparkleRef.current,
-      {
-        opacity: 0.35,
-        scale: 0.85,
-        duration: 0.45,
-        ease: 'power2.in'
-      },
-      1.65
-    );
+        // 4. Optical focus-lock sparkle twinkles brightly when focus locks
+        tl.to(
+          sparkleRef.current,
+          {
+            opacity: 1,
+            scale: 1.35,
+            duration: 0.25,
+            ease: 'back.out(2)'
+          },
+          0.85
+        );
+        tl.to(
+          sparkleRef.current,
+          {
+            opacity: 0.35,
+            scale: 0.85,
+            duration: 0.3,
+            ease: 'power2.in'
+          },
+          1.1
+        );
 
-    // 5. Mechanical Shutter Click: Shutter snaps shut for exposure
-    tl.to(
-      shutterRef.current,
-      {
-        opacity: 0.95,
-        duration: 0.06,
-        ease: 'power4.in'
-      },
-      2.12
-    );
-    tl.to(
-      shutterRef.current,
-      {
-        opacity: 0,
-        duration: 0.1,
-        ease: 'power3.out'
-      },
-      2.18
-    );
+        // 5. Mechanical Shutter Click: Shutter snaps shut for exposure
+        tl.to(
+          shutterRef.current,
+          {
+            opacity: 0.95,
+            duration: 0.05,
+            ease: 'power4.in'
+          },
+          1.38
+        );
+        tl.to(
+          shutterRef.current,
+          {
+            opacity: 0,
+            duration: 0.08,
+            ease: 'power3.out'
+          },
+          1.43
+        );
 
-    // 6. Camera Flash bursts on shutter click
-    tl.to(
-      flashRef.current,
-      {
-        opacity: 1,
-        duration: 0.1,
-        ease: 'power3.out'
-      },
-      2.18
-    );
-    tl.to(
-      flashRef.current,
-      {
-        opacity: 0,
-        duration: 0.38,
-        ease: 'power2.in'
-      },
-      2.28
-    );
+        // 6. Camera Flash bursts on shutter click
+        tl.to(
+          flashRef.current,
+          {
+            opacity: 1,
+            duration: 0.08,
+            ease: 'power3.out'
+          },
+          1.43
+        );
+        tl.to(
+          flashRef.current,
+          {
+            opacity: 0,
+            duration: 0.28,
+            ease: 'power2.in'
+          },
+          1.51
+        );
 
-    // 7. Logo "SMART PHOTOGRAPHY" emerges with gold brilliance
-    tl.to(
-      logoRef.current,
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.75,
-        ease: 'power3.out'
-      },
-      2.42
-    );
+        // 7. Logo "SMART PHOTOGRAPHY" emerges with gold brilliance
+        tl.to(
+          logoRef.current,
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.55,
+            ease: 'power3.out'
+          },
+          1.6
+        );
 
-    // 8. Fade out entire preloader smoothly
-    tl.to(
-      containerRef.current,
-      {
-        opacity: 0,
-        duration: 0.75,
-        ease: 'power2.inOut'
-      },
-      3.55
-    );
-  };
+        // 8. Fade out entire preloader smoothly
+        tl.to(
+          containerRef.current,
+          {
+            opacity: 0,
+            duration: 0.55,
+            ease: 'power2.inOut',
+            onStart: () => {
+              if (containerRef.current) {
+                containerRef.current.style.pointerEvents = 'none';
+              }
+            }
+          },
+          2.3
+        );
+      } catch (err) {
+        console.error('Error starting PageLoader animation:', err);
+        safeComplete();
+      }
+    };
 
     // Preload both camera & lens images, then start animation immediately
     Promise.all([loadAsset(Camera), loadAsset(Lens)])
