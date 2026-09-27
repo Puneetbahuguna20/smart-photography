@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import Camera from '../assets/images/camera.png';
-import Lens from '../assets/images/lens.jpg';
+import Camera from '../assets/images/camera.webp';
+import Lens from '../assets/images/lens.webp';
 
 interface PageLoaderProps {
   onComplete: () => void;
@@ -18,7 +18,42 @@ const PageLoader = ({ onComplete }: PageLoaderProps) => {
   const sparkleRef = useRef<SVGGElement>(null);
   const shutterRef = useRef<HTMLDivElement>(null);
 
+  const [assetsReady, setAssetsReady] = useState(false);
+
+  // Preload and verify BOTH camera body and lens images are loaded before animation starts
   useEffect(() => {
+    let isMounted = true;
+
+    const preloadImage = (src: string): Promise<void> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = src;
+        if (img.complete && img.naturalWidth !== 0) {
+          resolve();
+        } else {
+          img.onload = () => resolve();
+          img.onerror = () => resolve(); // Safety fallback so it never hangs indefinitely
+        }
+      });
+    };
+
+    Promise.all([
+      preloadImage(Camera),
+      preloadImage(Lens),
+    ]).then(() => {
+      if (isMounted) {
+        setAssetsReady(true);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!assetsReady) return;
+
     const tl = gsap.timeline({
       onComplete: () => {
         onComplete();
@@ -198,8 +233,11 @@ const PageLoader = ({ onComplete }: PageLoaderProps) => {
       className="fixed inset-0 bg-background z-[9999] flex flex-col items-center justify-center p-4 sm:p-6 overflow-hidden"
     >
       {/* Unified Camera & Lens Responsive Stage:
-          Uses camera.png's exact aspect ratio (1536/1024 = 1.5) so it scales perfectly on any device width */}
-      <div className="relative w-full max-w-[340px] sm:max-w-[520px] md:max-w-[640px] lg:max-w-[760px] aspect-[1536/1024] flex items-center justify-center shrink-0">
+          Uses camera.webp's exact aspect ratio (1536/1024 = 1.5) so it scales perfectly on any device width */}
+      <div 
+        className="relative w-full max-w-[340px] sm:max-w-[520px] md:max-w-[640px] lg:max-w-[760px] aspect-[1536/1024] flex items-center justify-center shrink-0 transition-opacity duration-200"
+        style={{ opacity: assetsReady ? 1 : 0 }}
+      >
         
         {/* Photorealistic DSLR Lens - True Macro Photography Optics:
             Exact Center: X=51.76%, Y=56.64%, Diameter=30.2% */}
@@ -224,6 +262,9 @@ const PageLoader = ({ onComplete }: PageLoaderProps) => {
             <img
               src={Lens}
               alt="Lens Optics"
+              loading="eager"
+              decoding="sync"
+              fetchPriority="high"
               className="w-full h-full object-cover scale-[1.05] filter contrast-[1.06] brightness-[1.02]"
             />
           </div>
@@ -288,6 +329,9 @@ const PageLoader = ({ onComplete }: PageLoaderProps) => {
           <img 
             src={Camera} 
             alt="Camera" 
+            loading="eager"
+            decoding="sync"
+            fetchPriority="high"
             className="w-full h-full object-contain filter drop-shadow-[0_15px_35px_rgba(0,0,0,0.9)]"
           />
         </div>

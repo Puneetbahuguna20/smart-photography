@@ -140,7 +140,7 @@ export default function Portfolio() {
                   key={item.id}
                   item={item}
                   index={index}
-                  priority={index < 3}
+                  priority={false}
                   onClick={() => handleImageClick(index)}
                 />
               ))}

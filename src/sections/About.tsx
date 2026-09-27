@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Camera, Award, Palette, Heart } from 'lucide-react';
-import AboutImg from '../assets/about/about.jpg';
+import AboutImg from '../assets/about/about.webp';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -105,6 +105,8 @@ export default function About() {
                 <img
                   src={AboutImg}
                   alt="About Smart Photography"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-auto object-cover transform transition-transform duration-700 ease-out group-hover:scale-105"
                 />
               </div>

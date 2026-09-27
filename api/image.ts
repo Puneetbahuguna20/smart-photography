@@ -128,7 +128,7 @@ export default async function handler(req: VercelRequest | any, res: VercelRespo
             outputBuffer = await sharp(inputBuffer)
               .rotate() // preserve orientation from EXIF
               .resize({ width: 800, withoutEnlargement: true, fit: 'inside' })
-              .webp({ quality: 80 })
+              .webp({ quality: 72 })
               .toBuffer();
           } catch (sharpErr) {
             console.warn('Sharp transformation fallback:', sharpErr);
@@ -138,8 +138,8 @@ export default async function handler(req: VercelRequest | any, res: VercelRespo
 
           res.setHeader('Content-Type', outputMime);
           res.setHeader('Content-Length', outputBuffer.length);
-          // Long-lived immutable caching: 1 year for thumbnails
-          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          // Long-lived immutable caching: 1 year for browser and CDN edge
+          res.setHeader('Cache-Control', 'public, max-age=31536000, s-maxage=31536000, immutable');
 
           if (req.method === 'HEAD') {
             return res.end();

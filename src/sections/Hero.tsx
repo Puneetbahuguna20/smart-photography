@@ -89,14 +89,28 @@ const navCategories = [
   { name: "FASHION", folder: "fashion" }
 ];
 
-function getCategoryImage(folderKey: string, fallbackUrl: string): string {
+function getCategoryImage(folderKey: string, fallbackUrl: string, isThumb = false): string {
   const normalizedKey = folderKey.toLowerCase().replace(/\s+/g, '-');
+  const targetTag = isThumb ? 'thumb' : 'hero';
+
+  // 1. Look for explicit target file (e.g., thumb.webp or hero.webp)
   for (const [path, module] of Object.entries(heroImageFiles)) {
     const lower = path.toLowerCase().replace(/\\/g, '/');
-    if (lower.includes(`/hero/${normalizedKey}/`) && !lower.includes('readme')) {
+    if (lower.includes(`/hero/${normalizedKey}/`) && lower.includes(targetTag) && !lower.includes('readme')) {
       return module.default;
     }
   }
+
+  // 2. Fallback to any image in that folder not explicitly designated as the other type
+  for (const [path, module] of Object.entries(heroImageFiles)) {
+    const lower = path.toLowerCase().replace(/\\/g, '/');
+    if (lower.includes(`/hero/${normalizedKey}/`) && !lower.includes('readme')) {
+      if (isThumb && lower.includes('hero.')) continue;
+      if (!isThumb && lower.includes('thumb.')) continue;
+      return module.default;
+    }
+  }
+
   return fallbackUrl;
 }
 
@@ -124,6 +138,16 @@ export default function Hero() {
       }
     };
   }, []);
+
+  // Preload the next slide's background image in idle time so transitions are instantaneous
+  useEffect(() => {
+    const nextSlideIdx = (activeSlide + 1) % slides.length;
+    const nextUrl = getCategoryImage(slides[nextSlideIdx].folder, slides[nextSlideIdx].defaultImage, false);
+    if (nextUrl) {
+      const img = new Image();
+      img.src = nextUrl;
+    }
+  }, [activeSlide]);
 
   // Keep active thumbnail centered within its horizontal container ONLY
   // (Using container.scrollTo instead of activeEl.scrollIntoView prevents vertical window scrolling)
@@ -158,7 +182,7 @@ export default function Hero() {
   };
 
   const currentSlide = slides[activeSlide];
-  const currentHeroImage = getCategoryImage(currentSlide.folder, currentSlide.defaultImage);
+  const currentHeroImage = getCategoryImage(currentSlide.folder, currentSlide.defaultImage, false);
 
   return (
     <section
@@ -179,6 +203,9 @@ export default function Hero() {
             <img
               src={currentHeroImage}
               alt={currentSlide.category}
+              loading="eager"
+              decoding={activeSlide === 0 ? 'sync' : 'async'}
+              fetchPriority={activeSlide === 0 ? 'high' : 'auto'}
               className="w-full h-full object-cover object-[center_35%]"
             />
           </motion.div>
@@ -399,7 +426,7 @@ export default function Hero() {
           >
             {slides.map((slide, i) => {
               const isActive = i === activeSlide;
-              const thumbImg = getCategoryImage(slide.folder, slide.defaultImage);
+              const thumbImg = getCategoryImage(slide.folder, slide.defaultImage, true);
               return (
                 <button
                   key={slide.id}
@@ -416,6 +443,8 @@ export default function Hero() {
                     <img
                       src={thumbImg}
                       alt={slide.category}
+                      loading="eager"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                   </div>

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import CameraImg from '../assets/images/camera1.png';
+import CameraImg from '../assets/images/camera1.webp';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -70,6 +70,8 @@ const ScrollTransition = () => {
         <img
           src={CameraImg}
           alt="Professional Camera"
+          loading="lazy"
+          decoding="async"
           className="w-full h-auto object-contain filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] drop-shadow-[0_0_25px_rgba(250,179,60,0.25)] transform transition-transform duration-700 ease-out group-hover:scale-105"
         />
       </div>

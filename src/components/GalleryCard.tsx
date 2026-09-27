@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ZoomIn } from 'lucide-react';
 import type { PortfolioItem } from '../types/gallery';
@@ -17,37 +17,72 @@ export default function GalleryCard({
 }: GalleryCardProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [shouldLoad, setShouldLoad] = useState(priority);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Progressive preloading: Start downloading thumbnail when within 400px of entering viewport
+  useEffect(() => {
+    if (shouldLoad) return;
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setShouldLoad(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setShouldLoad(true);
+            observer.disconnect();
+          }
+        });
+      },
+      { rootMargin: '400px 0px' }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [shouldLoad]);
+
+  const thumbnailSrc = item.thumbnailUrl || item.image;
 
   return (
     <motion.div
+      ref={cardRef}
       layout
       whileHover={{ y: -8 }}
       className="group relative aspect-[4/5] overflow-hidden cursor-pointer bg-[#141414] border border-white/5 rounded-none"
       onClick={onClick}
     >
       {/* Aspect Ratio Skeleton Shimmer placeholder */}
-      {!isLoaded && !hasError && (
+      {(!isLoaded || !shouldLoad) && !hasError && (
         <div className="absolute inset-0 bg-[#1a1a1a] flex flex-col justify-end p-6 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent animate-pulse" />
-          <div className="h-3 w-16 bg-gold/20 rounded mb-2" />
-          <div className="h-4 w-32 bg-white/10 rounded" />
+          <div className="h-3 w-20 bg-gold/20 rounded mb-2" />
+          <div className="h-4 w-36 bg-white/10 rounded" />
         </div>
       )}
 
-      {/* Optimized Gallery Thumbnail Image */}
-      <img
-        src={item.thumbnailUrl || item.image}
-        alt={item.title}
-        loading={priority ? 'eager' : 'lazy'}
-        decoding={priority ? 'sync' : 'async'}
-        // @ts-expect-error fetchpriority is a valid HTML attribute
-        fetchpriority={priority ? 'high' : 'auto'}
-        onLoad={() => setIsLoaded(true)}
-        onError={() => setHasError(true)}
-        className={`w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110 ${
-          isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-[1.02]'
-        }`}
-      />
+      {/* Optimized Gallery Thumbnail Image - WebP with Progressive Viewport Loading */}
+      {shouldLoad && (
+        <img
+          src={thumbnailSrc}
+          alt={item.title}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setIsLoaded(true)}
+          onError={() => setHasError(true)}
+          className={`w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110 ${
+            isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-[1.02]'
+          }`}
+        />
+      )}
 
       {/* Hover Overlay with Category & Title */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">

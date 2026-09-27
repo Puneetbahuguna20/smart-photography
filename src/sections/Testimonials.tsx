@@ -14,28 +14,28 @@ const testimonials = [
   {
     name: 'Priya & Rahul',
     role: 'Wedding Couple',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1887&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=75&w=200&auto=format&fit=crop',
     text: 'Smart Photography captured our wedding day perfectly! Every moment was beautifully preserved. The team was professional and the photos are stunning!',
     rating: 5,
   },
   {
     name: 'Amit Sharma',
     role: 'Corporate Client',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1887&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=75&w=200&auto=format&fit=crop',
     text: 'Excellent corporate event photography for our company conference. Professional, punctual, and delivered exceptional quality images!',
     rating: 5,
   },
   {
     name: 'Neha Patel',
     role: 'Maternity Shoot',
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2070&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=75&w=200&auto=format&fit=crop',
     text: 'Our maternity shoot was an amazing experience! The photos are so natural and beautiful.',
     rating: 5,
   },
   {
     name: 'Rajesh & Meera',
     role: 'Pre Wedding',
-    image: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?q=80&w=1887&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?q=75&w=200&auto=format&fit=crop',
     text: 'Pre-wedding shoot was beyond our expectations! Creative locations and stunning photos!',
     rating: 5,
   },
@@ -105,6 +105,8 @@ export default function Testimonials() {
                   <img
                     src={testimonial.image}
                     alt={testimonial.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-16 h-16 rounded-full object-cover border-2 border-[#F4C430]"
                   />
                   <div>
