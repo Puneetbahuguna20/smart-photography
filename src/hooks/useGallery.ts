@@ -21,7 +21,15 @@ export function useGallery() {
     try {
       const res = await fetch('/api/gallery');
       if (!res.ok) {
-        throw new Error(`Failed to load gallery (HTTP ${res.status})`);
+        let serverMsg = '';
+        try {
+          serverMsg = (await res.json())?.error || '';
+        } catch {
+          /* non-JSON error body */
+        }
+        throw new Error(
+          `Failed to load gallery (HTTP ${res.status})${serverMsg ? `: ${serverMsg}` : ''}`
+        );
       }
 
       const data: GalleryResponse = await res.json();

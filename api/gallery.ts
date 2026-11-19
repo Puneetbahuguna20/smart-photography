@@ -32,7 +32,17 @@ function getDriveClient() {
     throw new Error('Google Drive service account credentials are not configured in environment variables.');
   }
 
-  privateKey = privateKey.replace(/\\n/g, '\n');
+  // Tolerate common copy/paste variants in Vercel env vars:
+  // surrounding quotes, literal "\n" escapes, and Windows line endings.
+  privateKey = privateKey.trim();
+  if ((privateKey.startsWith('"') && privateKey.endsWith('"')) || (privateKey.startsWith("'") && privateKey.endsWith("'"))) {
+    privateKey = privateKey.slice(1, -1);
+  }
+  privateKey = privateKey.replace(/\\n/g, '\n').replace(/\r/g, '');
+
+  if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+    throw new Error('GOOGLE_PRIVATE_KEY is malformed: it must include the "-----BEGIN PRIVATE KEY-----" header from the service account JSON.');
+  }
 
   const auth = new google.auth.JWT({
     email: clientEmail,
