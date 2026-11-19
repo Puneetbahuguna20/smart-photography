@@ -19,10 +19,15 @@ export default function Footer() {
               Capturing moments, creating memories with passion and creativity.
             </p>
             <div className="flex gap-4">
-              {[Instagram, Twitter, Youtube].map((Icon, idx) => (
+              {[
+                { Icon: Instagram, href: 'https://www.instagram.com/smartphotography1999/' },
+                { Icon: Twitter, href: '#' },
+                { Icon: Youtube, href: '#' },
+              ].map(({ Icon, href }, idx) => (
                 <a
                   key={idx}
-                  href="#"
+                  href={href}
+                  {...(href !== '#' && { target: '_blank', rel: 'noopener noreferrer' })}
                   className="p-3 bg-dark-surface hover:bg-gold transition-all duration-300"
                 >
                   <Icon className="w-5 h-5 text-gold hover:text-black transition-colors" />
@@ -91,7 +96,7 @@ export default function Footer() {
               <li className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-gold" />
                 <span className="font-poppins text-sm text-text-secondary">
-                  +91 98765 43210
+                  +91 98996 60313, +91 78270 28826
                 </span>
               </li>
               <li className="flex items-center gap-3">
@@ -103,7 +108,7 @@ export default function Footer() {
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-gold mt-1" />
                 <span className="font-poppins text-sm text-text-secondary">
-                  123 Premium Street, Mumbai, India
+                  G-1/8, Om Vihar, Phase-V, Near 40 Foota Road, Uttam Nagar, New Delhi-59
                 </span>
               </li>
             </ul>

@@ -88,10 +88,10 @@ const ScrollTransition = () => {
         className="text-center z-10 opacity-0 translate-y-6"
       >
         <h2 className="font-playfair text-3xl sm:text-4xl md:text-6xl font-bold text-white mb-3 md:mb-4">
-          Next Phase <span className="text-gold">Starts Here</span>
+          Every Frame <span className="text-gold">Tells a Story</span>
         </h2>
         <p className="font-poppins text-base md:text-xl text-text-secondary">
-          Coming Soon...
+          Capturing your moments, creating memories that last forever
         </p>
       </div>
     </section>

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Camera, Award, Palette, Heart } from 'lucide-react';
-import AboutImg from '../assets/about/about.webp';
+import AboutImg from '../assets/about/about-photographer.webp';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -99,7 +99,7 @@ export default function About() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Image */}
           <div ref={imageRef} className="relative">
-            <div className="relative group">
+            <div className="relative group w-full max-w-[340px] sm:max-w-[400px] mx-auto">
               <div className="absolute -top-4 -left-4 border-2 border-gold w-full h-full rounded-xl pointer-events-none transition-transform duration-500 group-hover:-top-5 group-hover:-left-5" />
               <div className="relative z-10 rounded-xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/10">
                 <img
@@ -107,7 +107,7 @@ export default function About() {
                   alt="About Smart Photography"
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-auto object-cover transform transition-transform duration-700 ease-out group-hover:scale-105"
+                  className="w-full aspect-[4/5] object-cover object-[center_30%] transform transition-transform duration-700 ease-out group-hover:scale-105"
                 />
               </div>
               <div className="absolute -bottom-6 -right-6 bg-gold p-6 sm:p-7 rounded-xl z-20 shadow-[0_10px_30px_rgba(250,179,60,0.4)]">
