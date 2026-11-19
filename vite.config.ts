@@ -7,7 +7,7 @@ import bookingsHandler from './api/bookings.ts'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  // Load local environment variables including server-side keys from .env.local
+  // Load local environment variables including server-side keys from .env
   const env = loadEnv(mode, process.cwd(), '')
   // In Node.js, process.env is a special object requiring Object.assign
   Object.assign(process.env, env)

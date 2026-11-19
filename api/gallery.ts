@@ -5,9 +5,9 @@ import path from 'path';
 
 function loadLocalEnv() {
   if (!process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL) {
-    const envLocalPath = path.resolve(process.cwd(), '.env.local');
-    if (fs.existsSync(envLocalPath)) {
-      const content = fs.readFileSync(envLocalPath, 'utf8');
+    const envPath = path.resolve(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf8');
       content.split(/\r?\n/).forEach((line) => {
         const match = line.match(/^([A-Z_]+)=(.*)$/);
         if (match) {
