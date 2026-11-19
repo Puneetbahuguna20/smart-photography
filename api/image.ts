@@ -95,84 +95,62 @@ export default async function handler(req: VercelRequest | any, res: VercelRespo
       return sendError(res, 400, 'File is not a supported image.');
     }
 
-    // 2. High-speed, highly-compressed WebP thumbnail delivery for gallery grid
-    if (size === 'thumb') {
+    // 2. Always deliver a resized WebP. Vercel functions cap responses at 4.5MB,
+    //    and most originals in Drive are 5-18MB, so raw streaming fails in production.
+    const isThumb = size === 'thumb';
+    const targetWidth = isThumb ? 800 : 2000;
+    const quality = isThumb ? 72 : 82;
+
+    let inputBuffer: Buffer | null = null;
+    let fallbackMime = mimeType;
+
+    // Prefer Drive's pre-rendered thumbnail (fast, small download)
+    if (metaRes.data.thumbnailLink) {
       try {
-        let inputBuffer: Buffer | null = null;
-        let fallbackMime = 'image/jpeg';
-
-        if (metaRes.data.thumbnailLink) {
-          const thumbUrl = metaRes.data.thumbnailLink.replace(/=s\d+/, '=s800');
-          const thumbRes = await fetch(thumbUrl);
-          if (thumbRes.ok) {
-            const arr = await thumbRes.arrayBuffer();
-            inputBuffer = Buffer.from(arr);
-            fallbackMime = thumbRes.headers.get('content-type') || fallbackMime;
-          }
+        const thumbUrl = metaRes.data.thumbnailLink.replace(/=s\d+/, `=s${targetWidth}`);
+        const thumbRes = await fetch(thumbUrl);
+        if (thumbRes.ok) {
+          inputBuffer = Buffer.from(await thumbRes.arrayBuffer());
+          fallbackMime = thumbRes.headers.get('content-type') || fallbackMime;
         }
-
-        // If thumbnailLink is not available, stream media directly
-        if (!inputBuffer) {
-          const response = await drive.files.get(
-            { fileId: id, alt: 'media' },
-            { responseType: 'arraybuffer' }
-          );
-          inputBuffer = Buffer.from(response.data as ArrayBuffer);
-        }
-
-        if (inputBuffer) {
-          let outputBuffer: Buffer;
-          let outputMime = 'image/webp';
-
-          try {
-            outputBuffer = await sharp(inputBuffer)
-              .rotate() // preserve orientation from EXIF
-              .resize({ width: 800, withoutEnlargement: true, fit: 'inside' })
-              .webp({ quality: 72 })
-              .toBuffer();
-          } catch (sharpErr) {
-            console.warn('Sharp transformation fallback:', sharpErr);
-            outputBuffer = inputBuffer;
-            outputMime = fallbackMime;
-          }
-
-          res.setHeader('Content-Type', outputMime);
-          res.setHeader('Content-Length', outputBuffer.length);
-          // Long-lived immutable caching: 1 year for browser and CDN edge
-          res.setHeader('Cache-Control', 'public, max-age=31536000, s-maxage=31536000, immutable');
-
-          if (req.method === 'HEAD') {
-            return res.end();
-          }
-
-          return res.end(outputBuffer);
-        }
-      } catch (thumbError) {
-        console.warn('Thumbnail generation failed, falling back to full-size stream:', thumbError);
+      } catch (thumbErr) {
+        console.warn('thumbnailLink fetch failed, downloading original:', thumbErr);
       }
     }
 
-    // 3. Full-resolution stream for Swiper Lightbox (size === 'full' or default)
-    res.setHeader('Content-Type', mimeType);
-    if (metaRes.data.size) {
-      res.setHeader('Content-Length', metaRes.data.size);
+    // Otherwise download the original into memory (not into the response)
+    if (!inputBuffer) {
+      const response = await drive.files.get(
+        { fileId: id, alt: 'media' },
+        { responseType: 'arraybuffer' }
+      );
+      inputBuffer = Buffer.from(response.data as ArrayBuffer);
+      fallbackMime = mimeType;
     }
-    // Cache full-resolution: 1 day browser, 7 days CDN, stale-while-revalidate 1 day
-    res.setHeader(
-      'Cache-Control',
-      'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400'
-    );
+
+    let outputBuffer: Buffer;
+    let outputMime = 'image/webp';
+    try {
+      outputBuffer = await sharp(inputBuffer)
+        .rotate() // preserve orientation from EXIF
+        .resize({ width: targetWidth, height: targetWidth, withoutEnlargement: true, fit: 'inside' })
+        .webp({ quality })
+        .toBuffer();
+    } catch (sharpErr) {
+      console.warn('Sharp transformation fallback:', sharpErr);
+      outputBuffer = inputBuffer;
+      outputMime = fallbackMime;
+    }
+
+    res.setHeader('Content-Type', outputMime);
+    res.setHeader('Content-Length', outputBuffer.length);
+    // Long-lived immutable caching: 1 year for browser and CDN edge
+    res.setHeader('Cache-Control', 'public, max-age=31536000, s-maxage=31536000, immutable');
 
     if (req.method === 'HEAD') {
       return res.end();
     }
-
-    const response = await drive.files.get(
-      { fileId: id, alt: 'media' },
-      { responseType: 'stream' }
-    );
-
-    (response.data as any).pipe(res);
+    return res.end(outputBuffer);
   } catch (error: any) {
     if (error?.code === 404 || error?.status === 404) {
       return sendError(res, 404, 'Image not found in Google Drive.');
